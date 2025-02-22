@@ -1,34 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const username = ref('');
-const firstName = ref('');
-const lastName = ref('');
-const email = ref('');
-const password = ref('');
-const age = ref(0);
-const confirmPassword = ref('');
-const error = ref('');
+const register = reactive({
+  username: 'imru',
+  firstName: 'mrudul',
+  lastName: 'ks',
+  email: 'mrudul@gmail.com',
+  password: '12345',
+  age: 20,
+});
 
+const confirmPassword = ref('12345');
+const error = ref('');
 const handleRegister = async () => {
   try {
-    if (password.value !== confirmPassword.value) {
+    if (register.password !== confirmPassword.value) {
       error.value = 'Passwords do not match';
       return;
     }
-    await authStore.register({
-      username: username.value,
-      firstName: firstName.value,
-      lastName: lastName.value,
-      email: email.value,
-      password: password.value,
-      age: age.value,
-    });
+    await authStore.register(register);
     router.push('/dashboard');
   } catch (err) {
     error.value = 'Registration failed';
@@ -42,16 +37,16 @@ const handleRegister = async () => {
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
       </div>
-      <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
-        <div class="rounded-md shadow-sm -space-y-px">
+      <form class="mt-8 space-y-6 flex flex-col gap-4" @submit.prevent="handleRegister">
+        <div class="flex flex-col gap-4 rounded-md shadow-sm -space-y-px">
           <div>
             <label for="firstName" class="sr-only">First Name</label>
             <input
               id="firstName"
-              v-model="firstName"
+              v-model="register.firstName"
               type="text"
               required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm capitalize"
               placeholder="First Name"
             />
           </div>
@@ -59,10 +54,10 @@ const handleRegister = async () => {
             <label for="lastName" class="sr-only">Last Name</label>
             <input
               id="lastName"
-              v-model="lastName"
+              v-model="register.lastName"
               type="text"
               required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm capitalize"
               placeholder="Last Name"
             />
           </div>
@@ -70,7 +65,7 @@ const handleRegister = async () => {
             <label for="username" class="sr-only">Username</label>
             <input
               id="username"
-              v-model="username"
+              v-model="register.username"
               type="text"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
@@ -81,7 +76,7 @@ const handleRegister = async () => {
             <label for="email" class="sr-only">Email address</label>
             <input
               id="email"
-              v-model="email"
+              v-model="register.email"
               type="email"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
@@ -92,7 +87,7 @@ const handleRegister = async () => {
             <label for="age" class="sr-only">Age</label>
             <input
               id="age"
-              v-model="age"
+              v-model="register.age"
               type="number"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
@@ -103,7 +98,7 @@ const handleRegister = async () => {
             <label for="password" class="sr-only">Password</label>
             <input
               id="password"
-              v-model="password"
+              v-model="register.password"
               type="password"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"

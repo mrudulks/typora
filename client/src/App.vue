@@ -8,14 +8,15 @@ import Header from "./components/Auth/Header.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
+const nonAuthRoutes = ['/login', '/register'];
 
 const layout = computed(() => {
   const layout = route.meta.layout || "DefaultLayout";
   return defineAsyncComponent(() => import(`@/layouts/${layout}.vue`));
 });
 
-onMounted(() => {
-  authStore.initializeAuth();
+onMounted(async () => {
+  await authStore.initializeAuth();
 });
 </script>
 

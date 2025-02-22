@@ -15,6 +15,7 @@ export interface RegisterCredentials extends LoginCredentials {
 
 export interface AuthState {
   user: User | null;
-  token: string | null;
+  access: string | null;
+  refresh: string | null;
   isAuthenticated: boolean;
 }

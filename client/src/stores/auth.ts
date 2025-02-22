@@ -2,31 +2,30 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import type { AuthState, LoginCredentials, RegisterCredentials, User } from '../types/auth';
-
-const API_URL = 'http://localhost:4000/api'; // Replace with your actual API URL
+import { axiosInstance } from '../plugins/api';
+// import { useRoute , useRouter} from 'vue-router';
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
-    token: localStorage.getItem('token'),
+    access: null,
+    refresh: null,
     isAuthenticated: false,
   }),
 
   getters: {
     getUser: (state) => state.user,
-    getToken: (state) => state.token,
+    getAccessToken: (state) => state.access,
+    getRefreshToken: (state) => state.refresh,
     isUserAuthenticated: (state) => state.isAuthenticated,
   },
 
   actions: {
     async login(credentials: LoginCredentials) {
       try {
-        const response = await axios.post(`${API_URL}/auth/login`, credentials);
-        console.log("response", response.data);
-        const { token } = response.data;
-
-        this.setToken(token);
-        this.user = response.data.user;
+        const response: any = await axiosInstance.post('/auth/login', credentials);
+        this.setAuthenticated(true);
+        this.user = response.user;
         return true;
       } catch (error) {
         console.error('Login error:', error);
@@ -36,22 +35,36 @@ export const useAuthStore = defineStore('auth', {
 
     async register(credentials: RegisterCredentials) {
       try {
-        const response = await axios.post(`${API_URL}/auth/register`, credentials);
-        const { token } = response.data;
-
-        this.setToken(token);
-        return true;
+        const response: any = await axiosInstance.post('/users', credentials);
+        return response;
       } catch (error) {
         console.error('Registration error:', error);
         throw error;
       }
     },
 
+    async getProfile(from: string = '') {
+      console.log("getProfile", from);
+      try {
+        const { isLoggedIn, user }: any = await axiosInstance.get('/auth/me');
+        if (isLoggedIn) {
+          this.setAuthenticated(true);
+          this.user = user;
+        }
+      } catch (error) {
+        console.error('User retrieval error:', error);
+        throw error;
+      }
+    },
+    setAuthenticated(value: boolean) {
+      this.isAuthenticated = value;
+    },
+
     setToken(token: string) {
       console.log("token", token);
-      this.token = token;
+      this.access = token;
       this.isAuthenticated = true;
-      localStorage.setItem('token', token);
+      // localStorage.setItem('access', token);
 
       const decoded = jwtDecode<{ user: User }>(token);
       this.user = decoded.user;
@@ -59,20 +72,23 @@ export const useAuthStore = defineStore('auth', {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     },
 
-    logout() {
+    async logout() {
+      await axiosInstance.post('/auth/logout');
       this.user = null;
-      this.token = null;
+      this.access = null;
+      this.refresh = null;
       this.isAuthenticated = false;
-      localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
     },
 
     async initializeAuth() {
-      const token = localStorage.getItem('token');
-      if (token) {
+      await this.getProfile("initializeAuth");
+      if (this.isAuthenticated && this.user) {
         try {
-          this.setToken(token);
+          this.setAuthenticated(true);
+          this.user = this.user;
         } catch (error) {
+          console.error('Initialization error:', error);
           this.logout();
         }
       }

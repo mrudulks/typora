@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { NextFunction } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import userRoutes from './routes/userRoutes';
-import authRoutes from './routes/authRoutes';
+import apiRoutes from './routes/index';
+import session from 'express-session';
 
 dotenv.config();
 
@@ -12,19 +12,32 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/notesio';
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}), (req, res, next) => {
+  console.log('Incoming request URL:', req.url);
+  next();
+});
 app.use(express.json());
 
+// Add before routes
+// app.use(session({
+//   secret: process.env.SESSION_SECRET || 'fallback_session_secret',
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: { secure: true }
+// }));
+
 // Routes
-app.use('/api/users', userRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api', apiRoutes);
 
 // MongoDB Connection
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server is running on port http://localhost:${PORT}`);
     });
   })
   .catch((error) => {
